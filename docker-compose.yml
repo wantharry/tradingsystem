@@ -5,11 +5,11 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: wantharry/tradingsystem:backend-latest
     ports:
       - "8000:8000"
     volumes:
-      - ./data:/app/data
-      - ./docs:/app/docs
+      - trading_data:/app/data
     env_file:
       - .env
     restart: unless-stopped
@@ -23,11 +23,13 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    image: wantharry/tradingsystem:frontend-latest
     ports:
       - "3000:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
-  data:
+  trading_data:
