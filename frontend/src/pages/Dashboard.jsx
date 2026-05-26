@@ -168,7 +168,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatTile
           label="Top Setups Today"
-          value={topActions.length}
+          value={actions?.top_actions?.length ?? 0}
           sub="actionable signals"
           icon={BarChart2}
           color="text-green-400"
