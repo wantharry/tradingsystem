@@ -71,7 +71,7 @@ class CoveredCallStrategy(BaseStrategy):
             "ema_long_period": 200,     # Don't write calls in a bear market (below 200 EMA)
             "adx_max": 30,              # Avoid strong trends — covered calls underperform in rallies
             "premium_est_pct": 1.2,     # Estimated premium as % of underlying (conservative)
-            "stop_pct": 5.0,            # Stop the equity position at X% below entry
+            "stop_pct": 4.0,            # Stop the equity position at X% below entry
         }
 
     def generate_signals(self, df: pd.DataFrame) -> list[Signal]:

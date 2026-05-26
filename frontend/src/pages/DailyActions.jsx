@@ -625,7 +625,7 @@ export default function DailyActions() {
 
           {/* Action rows */}
           {actions.map((action, i) => (
-            <ActionRow key={action.symbol || i} action={action} outcomeMap={outcomeMap} />
+            <ActionRow key={`${action.symbol}-${action.strategy_key || i}`} action={action} outcomeMap={outcomeMap} />
           ))}
 
           {!isLoading && !isFetching && actions.length === 0 && (

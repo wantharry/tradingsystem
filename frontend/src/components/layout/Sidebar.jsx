@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Zap, BookOpen, FlaskConical,
-  Database, Star, TrendingUp
+  Database, Star, TrendingUp, ScanSearch
 } from 'lucide-react'
 
 const nav = [
@@ -11,6 +11,7 @@ const nav = [
   { to: '/backtest',  icon: FlaskConical,     label: 'Backtest' },
   { to: '/data',      icon: Database,         label: 'Data Viewer' },
   { to: '/watchlist', icon: Star,             label: 'Watchlist' },
+  { to: '/screener',  icon: ScanSearch,       label: 'Screener' },
 ]
 
 export default function Sidebar() {

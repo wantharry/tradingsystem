@@ -7,6 +7,7 @@ import Strategies from './pages/Strategies'
 import Backtest from './pages/Backtest'
 import DataViewer from './pages/DataViewer'
 import Watchlist from './pages/Watchlist'
+import Screener from './pages/Screener'
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/backtest" element={<Backtest />} />
             <Route path="/data" element={<DataViewer />} />
             <Route path="/watchlist" element={<Watchlist />} />
+            <Route path="/screener" element={<Screener />} />
           </Routes>
         </main>
       </div>

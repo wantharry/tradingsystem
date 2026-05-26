@@ -148,11 +148,11 @@ STRATEGY_FAMILIES = {
 
 # ── Regime → recommended strategy keys ──────────────────────────────────────
 REGIME_TO_STRATEGIES = {
-    "uptrend":   ["trend_following", "breakout_momentum"],
-    "downtrend": ["trend_following", "breakout_momentum"],
-    "ranging":   ["mean_reversion", "volatility_event"],
-    "high_vol":  ["breakout_momentum", "volatility_event"],
-    "event":     ["event_driven", "volatility_event"],
+    "uptrend":   ["trend_following", "breakout_momentum", "dual_momentum", "covered_call", "cta_trend"],
+    "downtrend": ["trend_following", "breakout_momentum", "pairs_trade", "cta_trend"],
+    "ranging":   ["mean_reversion", "volatility_event", "pairs_trade", "covered_call"],
+    "high_vol":  ["breakout_momentum", "volatility_event", "dispersion", "cta_trend"],
+    "event":     ["event_driven", "volatility_event", "dispersion", "pairs_trade"],
     "risk_off":  [],   # No new positions in risk-off
 }
 

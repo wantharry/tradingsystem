@@ -134,7 +134,21 @@ def generate_daily_actions(db: Session, target_date: Optional[date] = None) -> d
         scored.append({**item, "composite_score": round(score, 3)})
 
     scored.sort(key=lambda x: x["composite_score"], reverse=True)
-    top_actions = scored[:5]
+
+    # ── Diversity selection: guarantee best options + futures signal appear ──
+    # If options or futures strategies generated signals, reserve 1 slot each
+    # so the user always sees cross-asset-class recommendations.
+    top_options = next(
+        (s for s in scored if STRATEGY_CLASS_MAP.get(s["strategy_key"], {}).get("asset_class") == "options"), None
+    )
+    top_futures = next(
+        (s for s in scored if STRATEGY_CLASS_MAP.get(s["strategy_key"], {}).get("asset_class") == "futures"), None
+    )
+    pinned = [s for s in [top_options, top_futures] if s is not None]
+    pinned_ids = {id(s) for s in pinned}
+    remaining = [s for s in scored if id(s) not in pinned_ids]
+    top_actions = (pinned + remaining)[:5]
+    top_actions.sort(key=lambda x: x["composite_score"], reverse=True)
 
     # ── Step 5: Build daily action records ────────────────────────────
     action_records = []
@@ -259,28 +273,24 @@ def _write_daily_log(
 
 
 def _save_daily_actions(db: Session, actions: list, today: date):
-    """Save daily action records to the database."""
+    """Save daily action records to the database. Replaces all records for the date."""
+    # Delete old records for this date so diverse multi-strategy results replace old ones
+    db.query(DailyAction).filter(DailyAction.date == today).delete()
     for a in actions:
-        existing = (
-            db.query(DailyAction)
-            .filter(DailyAction.date == today, DailyAction.symbol == a["symbol"])
-            .first()
-        )
-        if not existing:
-            db.add(DailyAction(
-                date=today,
-                symbol=a["symbol"],
-                regime=a["regime"],
-                action=a["action"],
-                entry_price=a["entry_price"],
-                stop_price=a["stop_price"],
-                target_price=a["target_price"],
-                position_size_pct=settings.DEFAULT_RISK_PER_TRADE_PCT,
-                confidence=a["confidence"],
-                risk_reward_ratio=a["risk_reward_ratio"],
-                reasoning=a["reasoning"],
-                strategy_key=a.get("strategy_key"),
-            ))
+        db.add(DailyAction(
+            date=today,
+            symbol=a["symbol"],
+            regime=a["regime"],
+            action=a["action"],
+            entry_price=a["entry_price"],
+            stop_price=a["stop_price"],
+            target_price=a["target_price"],
+            position_size_pct=settings.DEFAULT_RISK_PER_TRADE_PCT,
+            confidence=a["confidence"],
+            risk_reward_ratio=a["risk_reward_ratio"],
+            reasoning=a["reasoning"],
+            strategy_key=a.get("strategy_key"),
+        ))
     try:
         db.commit()
     except Exception as e:

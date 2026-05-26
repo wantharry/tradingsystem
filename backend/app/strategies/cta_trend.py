@@ -142,13 +142,14 @@ class CTATrendStrategy(BaseStrategy):
             cross_confirmed = cross_pct >= p["breakout_confirm_pct"]
 
             # ── LONG: Golden Cross (fast SMA crosses above slow SMA) ──
+            # Also fires when already in an established uptrend (fast > slow, rising 200)
+            trend_long_active = (sma_f > sma_s) and ema200_rising and adx >= p["adx_threshold"]
+            trend_short_active = (sma_f < sma_s) and ema200_falling and adx >= p["adx_threshold"]
+
             if (
-                bullish_crossover
-                and cross_confirmed
-                and adx >= p["adx_threshold"]
-                and ema200_rising
-                and vol_ok
-            ):
+                (bullish_crossover and cross_confirmed and vol_ok)
+                or (trend_long_active and i == len(df) - 1)  # Signal on latest bar if in trend
+            ) and adx >= p["adx_threshold"] and ema200_rising:
                 stop = close - p["atr_stop_mult"] * atr
                 # No fixed target — trend trades run until reversal or stop
                 # Set a generous target for signal display purposes

@@ -32,24 +32,61 @@ logger = logging.getLogger(__name__)
 scheduler = BackgroundScheduler()
 
 
-def scheduled_data_refresh():
-    """Runs after market close to fetch latest data and generate tomorrow's actions."""
-    logger.info("Scheduled: Starting end-of-day data refresh...")
+def run_hourly_refresh():
+    """
+    Hourly job: fetch latest prices for all symbols in DB, then rescan.
+    Also exposed to the /screener/refresh endpoint for manual triggers.
+    Skips if outside market hours (9 AM – 5 PM ET, Mon–Fri).
+    """
+    import pytz
+    from datetime import datetime as _dt
+    et = pytz.timezone("America/New_York")
+    now_et = _dt.now(et)
+    if now_et.weekday() >= 5:                    # Saturday / Sunday
+        logger.info("Hourly refresh skipped — weekend")
+        return
+    if not (9 <= now_et.hour < 17):              # Outside 9 AM – 5 PM ET
+        logger.info(f"Hourly refresh skipped — outside market hours ({now_et.hour}:00 ET)")
+        return
+
+    logger.info("Hourly refresh: starting …")
     db = SessionLocal()
     try:
         from app.data.storage import refresh_all_data
+        from app.database.models import PriceData
+        from sqlalchemy import func as sqlfunc
+
+        # Update every symbol already in the DB
+        rows = (
+            db.query(PriceData.symbol)
+            .filter(PriceData.interval == "1d")
+            .distinct().all()
+        )
+        symbols = [r.symbol for r in rows]
+        if not symbols:
+            symbols = settings.symbols_list
+
+        refresh_all_data(db, symbols)
+        logger.info(f"Hourly refresh: updated {len(symbols)} symbols")
+
+        # Rescan screener
+        from app.screener.screener import run_screener, invalidate_cache
+        invalidate_cache()
+        result = run_screener(db, limit=200, force=True)
+        logger.info(f"Hourly screener: {result.get('total_results', 0)} signals from {result.get('total_screened', 0)} symbols")
+
+        # Also regenerate daily actions
         from app.daily.action_generator import generate_daily_actions
-
-        symbols = settings.symbols_list
-        results = refresh_all_data(db, symbols)
-        logger.info(f"Data refresh complete: {results}")
-
         actions = generate_daily_actions(db)
-        logger.info(f"Daily actions generated: {len(actions.get('top_actions', []))} signals")
+        logger.info(f"Daily actions regenerated: {len(actions.get('top_actions', []))} signals")
     except Exception as e:
-        logger.error(f"Scheduled refresh failed: {e}")
+        logger.error(f"Hourly refresh failed: {e}", exc_info=True)
     finally:
         db.close()
+
+
+# Keep old name as alias so any existing references don't break
+scheduled_data_refresh = run_hourly_refresh
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -69,15 +106,14 @@ async def lifespan(app: FastAPI):
 
     # 3. Start background scheduler
     scheduler.add_job(
-        scheduled_data_refresh,
-        "cron",
-        hour=settings.DATA_REFRESH_HOUR,
-        minute=0,
-        id="daily_refresh",
+        run_hourly_refresh,
+        "interval",
+        hours=1,
+        id="hourly_refresh",
         replace_existing=True,
     )
     scheduler.start()
-    logger.info(f"Scheduler started — daily refresh at {settings.DATA_REFRESH_HOUR}:00")
+    logger.info("Scheduler started — hourly refresh enabled")
 
     yield   # App is running
 
