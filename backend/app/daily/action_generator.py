@@ -28,7 +28,7 @@ from app.data.storage import get_price_data, get_active_symbols
 from app.regime.detector import detect_regime, detect_market_regime
 from app.strategies.registry import (
     STRATEGY_REGISTRY, get_strategy, get_strategies_for_regime,
-    STRATEGY_FAMILIES, REGIME_TO_STRATEGIES
+    STRATEGY_FAMILIES, REGIME_TO_STRATEGIES, STRATEGY_CLASS_MAP
 )
 from app.config import settings
 
@@ -141,6 +141,7 @@ def generate_daily_actions(db: Session, target_date: Optional[date] = None) -> d
     for rank, item in enumerate(top_actions):
         sig = item["signal"]
         family = STRATEGY_REGISTRY.get(item["strategy_key"], type("", (), {"family": "unknown"}))().family
+        cls_info = STRATEGY_CLASS_MAP.get(item["strategy_key"], {})
         rec = {
             "rank": rank + 1,
             "symbol": sig.symbol,
@@ -148,6 +149,10 @@ def generate_daily_actions(db: Session, target_date: Optional[date] = None) -> d
             "strategy": sig.strategy_name,
             "strategy_key": item["strategy_key"],
             "family": family,
+            "asset_class": cls_info.get("asset_class", "equity"),
+            "asset_class_label": cls_info.get("asset_class_label", "Equity"),
+            "strategy_type": cls_info.get("strategy_type", ""),
+            "strategy_type_label": cls_info.get("strategy_type_label", ""),
             "entry_price": sig.entry_price,
             "stop_price": sig.stop_price,
             "target_price": sig.target_price,
@@ -274,6 +279,7 @@ def _save_daily_actions(db: Session, actions: list, today: date):
                 confidence=a["confidence"],
                 risk_reward_ratio=a["risk_reward_ratio"],
                 reasoning=a["reasoning"],
+                strategy_key=a.get("strategy_key"),
             ))
     try:
         db.commit()

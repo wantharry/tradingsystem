@@ -174,6 +174,20 @@ def _get_best_regimes(key: str) -> list[str]:
     return []
 
 
+# ── Reverse map: strategy_key → (asset_class, strategy_type) ────────────────
+# Built automatically from STRATEGY_TAXONOMY so it stays in sync.
+STRATEGY_CLASS_MAP: dict[str, dict] = {}
+for _ac, _ac_data in STRATEGY_TAXONOMY.items():
+    for _st, _st_data in _ac_data["strategy_types"].items():
+        for _sk in _st_data["strategies"]:
+            STRATEGY_CLASS_MAP[_sk] = {
+                "asset_class": _ac,
+                "asset_class_label": _ac_data["label"],
+                "strategy_type": _st,
+                "strategy_type_label": _st_data["label"],
+            }
+
+
 def get_all_strategy_metadata() -> list[dict]:
     """Return metadata for all registered strategies (for the UI)."""
     result = []

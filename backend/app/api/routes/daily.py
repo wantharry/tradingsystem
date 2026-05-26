@@ -9,6 +9,7 @@ from app.database.database import get_db
 from app.daily.action_generator import generate_daily_actions, _build_trade_blueprint
 from app.daily.outcome_tracker import compute_outcomes, get_last_trading_day, get_performance_summary
 from app.database.models import DailyAction, DailyLog
+from app.strategies.registry import STRATEGY_CLASS_MAP
 
 router = APIRouter()
 
@@ -103,6 +104,7 @@ def get_daily_actions(
         if existing:
             actions_out = []
             for a in sorted(existing, key=lambda x: x.confidence or 0, reverse=True):
+                cls_info = STRATEGY_CLASS_MAP.get(a.strategy_key or "", {})
                 rec = {
                     "symbol": a.symbol,
                     "action": a.action,
@@ -116,6 +118,11 @@ def get_daily_actions(
                     "position_size_pct": a.position_size_pct,
                     "outcome": a.outcome,
                     "actual_pnl_pct": a.actual_pnl_pct,
+                    "strategy_key": a.strategy_key,
+                    "asset_class": cls_info.get("asset_class", "equity"),
+                    "asset_class_label": cls_info.get("asset_class_label", "Equity"),
+                    "strategy_type": cls_info.get("strategy_type", ""),
+                    "strategy_type_label": cls_info.get("strategy_type_label", ""),
                 }
                 rec["trade_blueprint"] = _build_trade_blueprint(rec, a.regime or "uptrend")
                 actions_out.append(rec)

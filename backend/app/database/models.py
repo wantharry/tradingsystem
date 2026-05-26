@@ -212,6 +212,7 @@ class DailyAction(Base):
     confidence = Column(Float)              # 0-1 confidence score
     risk_reward_ratio = Column(Float)       # (target - entry) / (entry - stop)
     reasoning = Column(Text)               # Plain-English explanation of WHY
+    strategy_key = Column(String(50))      # Registry key (e.g. "trend_following", "covered_call")
     outcome = Column(String(20))           # Filled in at end of day: WIN, LOSS, SKIPPED
     actual_pnl_pct = Column(Float)         # Actual PnL if trade was taken
     created_at = Column(DateTime, default=datetime.utcnow)
