@@ -147,7 +147,7 @@ def generate_daily_actions(db: Session, target_date: Optional[date] = None) -> d
     pinned = [s for s in [top_options, top_futures] if s is not None]
     pinned_ids = {id(s) for s in pinned}
     remaining = [s for s in scored if id(s) not in pinned_ids]
-    top_actions = (pinned + remaining)[:5]
+    top_actions = (pinned + remaining)[:20]
     top_actions.sort(key=lambda x: x["composite_score"], reverse=True)
 
     # ── Step 5: Build daily action records ────────────────────────────

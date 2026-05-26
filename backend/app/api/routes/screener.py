@@ -122,7 +122,7 @@ def _bulk_download_task():
 
     db = SessionLocal()
     try:
-        universe = get_universe()
+        universe = get_universe(force_refresh=True)
         logger.info(f"Bulk download: {len(universe)} symbols")
         batch_size = 50
         for i in range(0, len(universe), batch_size):

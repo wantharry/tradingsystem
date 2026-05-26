@@ -86,22 +86,31 @@ def _save_universe_cache(symbols: list):
 
 
 def _fetch_sp500_wikipedia() -> list:
+    import io
+    import requests
     import pandas as pd
-    tables = pd.read_html(
+    resp = requests.get(
         "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",
-        attrs={"id": "constituents"},
         timeout=15,
+        headers={"User-Agent": "Mozilla/5.0"},
     )
+    resp.raise_for_status()
+    tables = pd.read_html(io.StringIO(resp.text), attrs={"id": "constituents"})
     symbols = tables[0]["Symbol"].tolist()
     return [str(s).replace(".", "-") for s in symbols]
 
 
 def _fetch_ndx100_wikipedia() -> list:
+    import io
+    import requests
     import pandas as pd
-    tables = pd.read_html(
+    resp = requests.get(
         "https://en.wikipedia.org/wiki/Nasdaq-100",
         timeout=15,
+        headers={"User-Agent": "Mozilla/5.0"},
     )
+    resp.raise_for_status()
+    tables = pd.read_html(io.StringIO(resp.text))
     for table in tables:
         for col in ("Ticker", "Symbol"):
             if col in table.columns:

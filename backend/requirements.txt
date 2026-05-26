@@ -17,3 +17,4 @@ requests>=2.32.0
 aiofiles>=23.2.1
 alembic>=1.13.1
 pytz>=2024.1
+lxml>=5.0.0
