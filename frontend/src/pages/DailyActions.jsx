@@ -219,6 +219,17 @@ function ActionRow({ action, outcomeMap = {} }) {
               }`}>{action.asset_class_label}</span>
             )}
             {om && <span className={`badge border text-[10px] ${om.cls}`}>{om.label}</span>}
+            {action.sentiment && (
+              <span className={`badge border text-[10px] ${
+                action.sentiment.label === 'bullish'
+                  ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                  : action.sentiment.label === 'bearish'
+                  ? 'border-red-500/30 bg-red-500/10 text-red-400'
+                  : 'border-gray-500/30 bg-gray-500/10 text-gray-400'
+              }`}>
+                {action.sentiment.label === 'bullish' ? '▲ Bullish News' : action.sentiment.label === 'bearish' ? '▼ Bearish News' : '— Neutral News'}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex-1 grid grid-cols-3 gap-2 text-sm">

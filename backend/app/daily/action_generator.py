@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 
 from app.database.models import DailyAction, DailyLog, Strategy
 from app.data.storage import get_price_data, get_active_symbols
+from app.data.sentiment import get_news_sentiment
 from app.regime.detector import detect_regime, detect_market_regime
 from app.strategies.registry import (
     STRATEGY_REGISTRY, get_strategy, get_strategies_for_regime,
@@ -177,6 +178,11 @@ def generate_daily_actions(db: Session, target_date: Optional[date] = None) -> d
             "indicators": sig.indicators,
             "regime": item["symbol_regime"],
         }
+        # News sentiment (cached 1h, fetched only for final top-20)
+        try:
+            rec["sentiment"] = get_news_sentiment(sig.symbol)
+        except Exception:
+            rec["sentiment"] = {"score": 0.0, "label": "neutral", "article_count": 0}
         rec["trade_blueprint"] = _build_trade_blueprint(rec, regime)
         action_records.append(rec)
 

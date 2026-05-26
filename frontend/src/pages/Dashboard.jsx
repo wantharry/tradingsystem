@@ -63,6 +63,18 @@ function ActionCard({ action, rank }) {
           }`}>
             {isLong ? '▲ BUY' : '▼ SELL'}
           </span>
+          {action.sentiment && (
+            <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${
+              action.sentiment.label === 'bullish'
+                ? 'bg-emerald-900/40 text-emerald-300 border-emerald-700'
+                : action.sentiment.label === 'bearish'
+                ? 'bg-red-900/40 text-red-300 border-red-700'
+                : 'bg-gray-700/40 text-gray-400 border-gray-600'
+            }`}>
+              {action.sentiment.label === 'bullish' ? '📰▲' : action.sentiment.label === 'bearish' ? '📰▼' : '📰—'}
+              {' '}{action.sentiment.label}
+            </span>
+          )}
         </div>
         <div className="text-right">
           <p className="text-xs text-gray-500">Confidence</p>
