@@ -17,7 +17,7 @@ done
 
 # Check how many symbols have price data (0 = fresh volume)
 SYMBOLS=$(curl -s http://localhost:8001/api/v1/screener/universe/status 2>/dev/null \
-    | python3 -c "import sys,json; print(json.load(sys.stdin).get('symbols_with_data', 0))" 2>/dev/null \
+    | python3 -c "import sys,json; data=json.load(sys.stdin); print(data.get('total_symbols_in_db', 0))" 2>/dev/null \
     || echo "0")
 
 if [ "$SYMBOLS" -lt "10" ]; then
