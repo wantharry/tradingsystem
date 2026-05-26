@@ -6,9 +6,11 @@ HOW TO ADD A NEW STRATEGY:
   2. Import it here and add it to STRATEGY_REGISTRY
   3. That's it. The UI and API auto-discover it.
 
-DESIGN:
-  The registry maps a strategy key to its class.
-  This lets us instantiate strategies by name from the DB or API.
+STRATEGY TAXONOMY (3 levels):
+  Level 1 — Asset Class:    Equity | Options | Futures
+  Level 2 — Strategy Type:  trend_following | hedge_equity | short_volatility |
+                             covered_calls | dispersion
+  Level 3 — Strategy:       The individual implementation (e.g. EMA Pullback Trend)
 """
 
 from app.strategies.trend_following import TrendFollowingStrategy
@@ -27,41 +29,109 @@ STRATEGY_REGISTRY: dict = {
     "event_driven": EventDrivenStrategy,
 }
 
-# ── Family groupings (for UI display and regime routing) ────────────────────
+# ── 3-Level Taxonomy ─────────────────────────────────────────────────────────
+# Level 1 → Level 2 → [strategy keys]
+# This drives the tree display in the UI so you can see:
+#   WHAT you're trading (asset class), HOW you're trading (strategy type),
+#   and WHICH specific strategy is doing it.
+STRATEGY_TAXONOMY = {
+    "equity": {
+        "label": "Equity",
+        "icon": "📈",
+        "description": "Stocks and ETFs — directional and mean-reversion plays",
+        "color": "#22c55e",   # green
+        "strategy_types": {
+            "trend_following": {
+                "label": "Trend Following",
+                "description": "Ride confirmed price trends — enter on pullbacks or breakouts",
+                "best_regimes": ["uptrend", "downtrend"],
+                "strategies": ["trend_following", "breakout_momentum"],
+            },
+            "hedge_equity": {
+                "label": "Hedge Equity",
+                "description": "Defensive plays — fade extremes or trade catalysts to reduce net exposure",
+                "best_regimes": ["ranging", "event", "risk_off"],
+                "strategies": ["mean_reversion", "event_driven"],
+            },
+        },
+    },
+    "options": {
+        "label": "Options",
+        "icon": "⚡",
+        "description": "Options strategies — trade volatility and premium",
+        "color": "#8b5cf6",   # purple
+        "strategy_types": {
+            "short_volatility": {
+                "label": "Short Volatility",
+                "description": "Sell premium when IV is elevated; profit from IV contraction",
+                "best_regimes": ["ranging", "high_vol"],
+                "strategies": ["volatility_event"],
+            },
+            "covered_calls": {
+                "label": "Covered Calls",
+                "description": "Generate income on long equity positions by selling upside",
+                "best_regimes": ["ranging", "uptrend"],
+                "strategies": [],   # Placeholder — strategy coming soon
+            },
+            "dispersion": {
+                "label": "Dispersion",
+                "description": "Long single-stock vol, short index vol when correlation is elevated",
+                "best_regimes": ["high_vol", "event"],
+                "strategies": [],   # Placeholder — strategy coming soon
+            },
+        },
+    },
+    "futures": {
+        "label": "Futures",
+        "icon": "🔄",
+        "description": "Futures contracts — systematic trend following across asset classes",
+        "color": "#f59e0b",   # amber
+        "strategy_types": {
+            "trend_following": {
+                "label": "Trend Following",
+                "description": "Systematic CTA-style trend following across equity, rates, FX, and commodities",
+                "best_regimes": ["uptrend", "downtrend"],
+                "strategies": [],   # Placeholder — strategy coming soon
+            },
+        },
+    },
+}
+
+# ── Family groupings (for regime routing — kept for backward compat) ─────────
 STRATEGY_FAMILIES = {
     "trend": {
         "label": "Trend Following",
         "description": "Strategies that ride established price trends",
         "best_regime": ["uptrend", "downtrend"],
-        "color": "#22c55e",   # green
+        "color": "#22c55e",
         "strategies": ["trend_following"],
     },
     "mean_reversion": {
         "label": "Mean Reversion",
         "description": "Strategies that fade extremes in range-bound markets",
         "best_regime": ["ranging"],
-        "color": "#3b82f6",   # blue
+        "color": "#3b82f6",
         "strategies": ["mean_reversion"],
     },
     "breakout": {
         "label": "Breakout / Momentum",
         "description": "Strategies that enter on confirmed range expansions",
         "best_regime": ["high_vol", "uptrend", "downtrend"],
-        "color": "#f59e0b",   # amber
+        "color": "#f59e0b",
         "strategies": ["breakout_momentum"],
     },
     "volatility": {
         "label": "Volatility",
         "description": "Strategies that trade the level of volatility itself",
         "best_regime": ["high_vol", "event", "ranging"],
-        "color": "#8b5cf6",   # purple
+        "color": "#8b5cf6",
         "strategies": ["volatility_event"],
     },
     "event": {
         "label": "Event Driven",
         "description": "Strategies based on known catalysts and their aftermath",
         "best_regime": ["event"],
-        "color": "#ef4444",   # red
+        "color": "#ef4444",
         "strategies": ["event_driven"],
     },
 }
@@ -85,6 +155,15 @@ def get_strategy(key: str, parameters: dict = None):
     return cls(parameters=parameters)
 
 
+def _get_best_regimes(key: str) -> list[str]:
+    """Look up best regimes for a strategy key from the taxonomy."""
+    for asset in STRATEGY_TAXONOMY.values():
+        for stype in asset["strategy_types"].values():
+            if key in stype["strategies"]:
+                return stype["best_regimes"]
+    return []
+
+
 def get_all_strategy_metadata() -> list[dict]:
     """Return metadata for all registered strategies (for the UI)."""
     result = []
@@ -94,7 +173,10 @@ def get_all_strategy_metadata() -> list[dict]:
             "key": key,
             "name": instance.name,
             "family": instance.family,
+            "asset_class": getattr(instance, "asset_class", "equity"),
+            "strategy_type": getattr(instance, "strategy_type", "unknown"),
             "description": instance.description,
+            "best_regimes": _get_best_regimes(key),
             "parameters": instance.parameters,
         })
     return result

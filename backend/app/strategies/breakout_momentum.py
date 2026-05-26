@@ -36,6 +36,8 @@ class BreakoutMomentumStrategy(BaseStrategy):
 
     name = "Volume Breakout Momentum"
     family = "breakout"
+    asset_class = "equity"           # Level 1
+    strategy_type = "trend_following"  # Level 2: breakout is a subset of trend following
     description = (
         "Enters on confirmed breaks of 20-period highs or lows with volume confirmation. "
         "Uses ATR expansion to confirm real momentum, not a fake move."

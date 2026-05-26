@@ -43,6 +43,8 @@ class VolatilityEventStrategy(BaseStrategy):
 
     name = "Volatility Squeeze Breakout"
     family = "volatility"
+    asset_class = "options"           # Level 1: this pattern is core to options short-vol plays
+    strategy_type = "short_volatility" # Level 2: profit from IV contraction after the squeeze releases
     description = (
         "Identifies volatility squeezes (ATR contracting to historical lows) then trades "
         "the directional breakout when the squeeze releases with volume confirmation. "

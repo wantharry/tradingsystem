@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 
 from app.database.database import get_db
 from app.strategies.registry import (
-    get_all_strategy_metadata, get_strategy, STRATEGY_FAMILIES, REGIME_TO_STRATEGIES
+    get_all_strategy_metadata, get_strategy, STRATEGY_FAMILIES,
+    STRATEGY_TAXONOMY, REGIME_TO_STRATEGIES
 )
 from app.data.storage import get_price_data
 from app.utils import sanitize_for_json
@@ -16,9 +17,10 @@ router = APIRouter()
 
 @router.get("/")
 def list_strategies():
-    """List all registered strategies with metadata."""
+    """List all registered strategies with metadata and 3-level taxonomy."""
     return {
         "strategies": get_all_strategy_metadata(),
+        "taxonomy": STRATEGY_TAXONOMY,
         "families": STRATEGY_FAMILIES,
         "regime_mapping": REGIME_TO_STRATEGIES,
     }

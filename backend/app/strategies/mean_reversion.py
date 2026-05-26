@@ -40,6 +40,8 @@ class MeanReversionStrategy(BaseStrategy):
 
     name = "Bollinger RSI Reversion"
     family = "mean_reversion"
+    asset_class = "equity"           # Level 1
+    strategy_type = "hedge_equity"   # Level 2: defensive/counter-trend equity strategies
     description = (
         "Fades extreme RSI and Bollinger Band conditions in range-bound markets. "
         "Requires ADX < 30 to confirm we're NOT in a trend. Quick entries, quick exits."

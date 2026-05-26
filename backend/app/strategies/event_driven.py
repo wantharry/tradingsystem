@@ -37,6 +37,8 @@ class EventDrivenStrategy(BaseStrategy):
 
     name = "Post-Event Momentum Drift"
     family = "event"
+    asset_class = "equity"           # Level 1
+    strategy_type = "hedge_equity"   # Level 2: catalyst-driven, used to hedge or complement trending positions
     description = (
         "Trades the post-earnings or post-catalyst drift. Detects gap-and-go setups "
         "where price gaps significantly on high volume and follows through in same direction."

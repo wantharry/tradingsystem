@@ -36,6 +36,8 @@ class TrendFollowingStrategy(BaseStrategy):
 
     name = "EMA Pullback Trend"
     family = "trend"
+    asset_class = "equity"           # Level 1: Equity | Options | Futures
+    strategy_type = "trend_following"  # Level 2: trend_following | hedge_equity | short_volatility | covered_calls | dispersion
     description = (
         "Enters in the direction of the confirmed trend on pullbacks to the 20 EMA. "
         "Requires ADX > 25 to confirm trend strength before entry."
