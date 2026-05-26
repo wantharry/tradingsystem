@@ -151,7 +151,7 @@ export default function Dashboard() {
     staleTime: 10 * 60_000,
   })
 
-  const topActions = actions?.top_actions || []
+  const topActions = (actions?.top_actions || []).slice(0, 20)  // dashboard shows top-20 summary
   const regimes = allRegimes?.regimes || []
   const uptrendCount = regimes.filter(r => r.regime === 'uptrend').length
 

@@ -148,7 +148,7 @@ def generate_daily_actions(db: Session, target_date: Optional[date] = None) -> d
     pinned = [s for s in [top_options, top_futures] if s is not None]
     pinned_ids = {id(s) for s in pinned}
     remaining = [s for s in scored if id(s) not in pinned_ids]
-    top_actions = (pinned + remaining)[:20]
+    top_actions = pinned + remaining
     top_actions.sort(key=lambda x: x["composite_score"], reverse=True)
 
     # ── Step 5: Build daily action records ────────────────────────────
@@ -178,11 +178,14 @@ def generate_daily_actions(db: Session, target_date: Optional[date] = None) -> d
             "indicators": sig.indicators,
             "regime": item["symbol_regime"],
         }
-        # News sentiment (cached 1h, fetched only for final top-20)
-        try:
-            rec["sentiment"] = get_news_sentiment(sig.symbol)
-        except Exception:
-            rec["sentiment"] = {"score": 0.0, "label": "neutral", "article_count": 0}
+        # News sentiment (cached 1h) — enriched for top-50 by composite score only
+        if rank < 50:
+            try:
+                rec["sentiment"] = get_news_sentiment(sig.symbol)
+            except Exception:
+                rec["sentiment"] = {"score": 0.0, "label": "neutral", "article_count": 0}
+        else:
+            rec["sentiment"] = None
         rec["trade_blueprint"] = _build_trade_blueprint(rec, regime)
         action_records.append(rec)
 
