@@ -211,6 +211,13 @@ function ActionRow({ action, outcomeMap = {} }) {
           <p className="font-bold text-white text-base">{action.symbol}</p>
           <div className="flex items-center gap-1 mt-0.5">
             <span className={`badge border text-[10px] ${color}`}>{action.action}</span>
+            {action.asset_class_label && (
+              <span className={`badge border text-[10px] ${
+                action.asset_class === 'options' ? 'border-purple-500/30 bg-purple-500/10 text-purple-400' :
+                action.asset_class === 'futures' ? 'border-amber-500/30 bg-amber-500/10 text-amber-400' :
+                'border-green-500/30 bg-green-500/10 text-green-400'
+              }`}>{action.asset_class_label}</span>
+            )}
             {om && <span className={`badge border text-[10px] ${om.cls}`}>{om.label}</span>}
           </div>
         </div>
@@ -578,8 +585,8 @@ export default function DailyActions() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <div>
-                <p className="font-semibold text-white mb-0.5">Style: Swing Trading</p>
-                <p className="text-gray-400">Hold 3–15 days. Not day trading, not value investing. Catching a short-term move then getting out.</p>
+                <p className="font-semibold text-white mb-0.5">Style: Multi-Strategy</p>
+                <p className="text-gray-400">10 strategies across Equity, Options &amp; Futures. Each signal tells you the asset class, trade type, and exactly what rules to follow.</p>
               </div>
               <div>
                 <p className="font-semibold text-white mb-0.5">Risk: 1% per trade</p>
