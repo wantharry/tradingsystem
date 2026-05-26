@@ -18,6 +18,11 @@ from app.strategies.mean_reversion import MeanReversionStrategy
 from app.strategies.breakout_momentum import BreakoutMomentumStrategy
 from app.strategies.volatility_event import VolatilityEventStrategy
 from app.strategies.event_driven import EventDrivenStrategy
+from app.strategies.dual_momentum import DualMomentumStrategy
+from app.strategies.pairs_trade import PairsTradeStrategy
+from app.strategies.covered_call import CoveredCallStrategy
+from app.strategies.dispersion import DispersionStrategy
+from app.strategies.cta_trend import CTATrendStrategy
 
 # ── Registry: key → strategy class ──────────────────────────────────────────
 # Add new strategies here. The key is stored in the database and used in URLs.
@@ -27,6 +32,11 @@ STRATEGY_REGISTRY: dict = {
     "breakout_momentum": BreakoutMomentumStrategy,
     "volatility_event": VolatilityEventStrategy,
     "event_driven": EventDrivenStrategy,
+    "dual_momentum": DualMomentumStrategy,
+    "pairs_trade": PairsTradeStrategy,
+    "covered_call": CoveredCallStrategy,
+    "dispersion": DispersionStrategy,
+    "cta_trend": CTATrendStrategy,
 }
 
 # ── 3-Level Taxonomy ─────────────────────────────────────────────────────────
@@ -45,13 +55,13 @@ STRATEGY_TAXONOMY = {
                 "label": "Trend Following",
                 "description": "Ride confirmed price trends — enter on pullbacks or breakouts",
                 "best_regimes": ["uptrend", "downtrend"],
-                "strategies": ["trend_following", "breakout_momentum"],
+                "strategies": ["trend_following", "breakout_momentum", "dual_momentum"],
             },
             "hedge_equity": {
                 "label": "Hedge Equity",
                 "description": "Defensive plays — fade extremes or trade catalysts to reduce net exposure",
                 "best_regimes": ["ranging", "event", "risk_off"],
-                "strategies": ["mean_reversion", "event_driven"],
+                "strategies": ["mean_reversion", "event_driven", "pairs_trade"],
             },
         },
     },
@@ -71,13 +81,13 @@ STRATEGY_TAXONOMY = {
                 "label": "Covered Calls",
                 "description": "Generate income on long equity positions by selling upside",
                 "best_regimes": ["ranging", "uptrend"],
-                "strategies": [],   # Placeholder — strategy coming soon
+                "strategies": ["covered_call"],
             },
             "dispersion": {
                 "label": "Dispersion",
                 "description": "Long single-stock vol, short index vol when correlation is elevated",
                 "best_regimes": ["high_vol", "event"],
-                "strategies": [],   # Placeholder — strategy coming soon
+                "strategies": ["dispersion"],
             },
         },
     },
@@ -91,7 +101,7 @@ STRATEGY_TAXONOMY = {
                 "label": "Trend Following",
                 "description": "Systematic CTA-style trend following across equity, rates, FX, and commodities",
                 "best_regimes": ["uptrend", "downtrend"],
-                "strategies": [],   # Placeholder — strategy coming soon
+                "strategies": ["cta_trend"],
             },
         },
     },
