@@ -19,3 +19,6 @@ data/*.sqlite
 .pytest_cache/
 htmlcov/
 .coverage
+data/*.db-wal
+data/*.db-shm
+data/*.db-journal
